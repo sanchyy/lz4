@@ -24,6 +24,12 @@ def config_args():
     parser.add_argument('file')
     return parser.parse_args()
 
+def read_file(path_file):
+    f = open(path_file, "r")
+    res = f.read()
+    f.close()
+    return res
+
 def main():
     print("uwu")
 
