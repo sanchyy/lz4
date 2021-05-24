@@ -31,10 +31,6 @@ def read_file(path_file):
     return res
 
 def main():
-    print("uwu")
-
-
-if __name__ == '__main__':
     args = config_args()
     if args.c:
         print(hex2bin(args.file))
@@ -42,5 +38,9 @@ if __name__ == '__main__':
     else:
         print(bin2hex(args.file))
         # deflate(args.file)
+
+
+if __name__ == '__main__':
+    main()
     
 
