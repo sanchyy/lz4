@@ -38,8 +38,19 @@ def read_file(path_file):
     return res
 
 def decompress(filename):
+    return ""
+    """
     data = read_file(filename)
-    for c in data:
+    ptr = 0
+    while ptr < len(data):
+        token = data
+        lit_len = (token >> 4) & 0x0F
+        ptr += 1
+        if lit_len == 15:  # if 1111, we get another byte
+            while data[ptr] == 255:
+                lit_len += 255
+                ptr += 1
+    """
 
 
 def main():
