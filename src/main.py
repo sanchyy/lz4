@@ -8,6 +8,13 @@ LZ4 SEQUENCE
 0-L bytes   literals
 2-bytes     offset
 0-n bytes   match-length
+
+n -> tamany del window
+m -> tamany del match
+
+n = 8192
+m = 128
+(recommended)
 """
 
 def hex2bin(hex_value) -> str:
