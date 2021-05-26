@@ -1,4 +1,5 @@
 import argparse
+import struct
 import time 
 
 """
@@ -37,8 +38,6 @@ def read_file(path_file):
     f.close()
     return res
 
-def decompress(filename):
-    return ""
     """
     data = read_file(filename)
     ptr = 0
@@ -52,15 +51,73 @@ def decompress(filename):
                 ptr += 1
     """
 
+def decompress(filename):
+    with open(filename, "rb") as stream:
+        decompressed_text = read_blocks(stream, bytearray())
+
+    print(decompressed_text)
+
+def read_blocks(stream, output):
+    # Primer byte del bloc -> token
+    token = stream.read(1)
+    while token:
+        # Primera part (4 bits) del token -> mida (bytes) dels literals
+        literal_length = (token[0] >> 4)
+        if literal_length == 15:  # if 1111, we calculate Linear small-integer code (LSIC)
+            literal_length += calculate_lsic(stream)
+
+        # 'literal_length' bytes de literal
+        literal = stream.read(literal_length)
+
+        # offset per calcular següents literals a afegir
+        offset_little_endian = stream.read(2)
+        offset = little_endian_to_value(offset_little_endian)
+
+        # mida de bytes a duplicar
+        sequence_length = token[0] & 0x0F
+        if sequence_length == 15:
+            sequence_length += calculate_lsic(stream)
+
+        output += literal
+
+        # number of bytes already decoded
+        output_length = len(output)
+        if sequence_length:
+            duplication_starting_point = output_length - offset
+            output += output[duplication_starting_point:sequence_length]
+
+        token = stream.read(1)
+
+    return output
+
+
+def calculate_lsic(stream):
+    new_value = stream.read(1)[0]
+    accumulator = new_value
+    # anem acumulant el valor dels bytes mentre que siguin igual a 255
+    while new_value == 255:
+        new_value = stream.read(1)[0]
+        accumulator += new_value
+    return accumulator
+
+
+def little_endian_to_value(little_endian):
+    if little_endian:
+        return struct.unpack("<h", little_endian)[0]
+    else:
+        return 0
+
 
 def main():
-    args = config_args()
-    if args.c:
-        print(hex2bin(args.file))
-        # compress(args.file)
-    else:
-        print(bin2hex(args.file))
-        # decompress(args.file)
+    # args = config_args()
+    # if args.c:
+    #     print(hex2bin(args.file))
+    #     # compress(args.file)
+    # elif args.d:
+    #     print(bin2hex(args.file))
+    #     # decompress(args.file)
+    decompress('../wells_the_invisible_man.txt.lz4')
+
 
 
 if __name__ == '__main__':
