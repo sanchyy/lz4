@@ -56,6 +56,9 @@ def decompress(filename):
         decompressed_text = read_blocks(stream, bytearray())
 
     print(decompressed_text)
+    f = open(filename + '.out', "wb")
+    f.write(decompressed_text)
+    f.close()
 
 def read_blocks(stream, output):
     # Primer byte del bloc -> token
@@ -70,21 +73,22 @@ def read_blocks(stream, output):
         literal = stream.read(literal_length)
 
         # offset per calcular següents literals a afegir
-        offset_little_endian = stream.read(2)
+        offset_little_endian = bytes(stream.read(2))
         offset = little_endian_to_value(offset_little_endian)
 
         # mida de bytes a duplicar
         sequence_length = token[0] & 0x0F
         if sequence_length == 15:
             sequence_length += calculate_lsic(stream)
-
-        output += literal
+        sequence_length += 4
 
         # number of bytes already decoded
+
+        output += literal
         output_length = len(output)
-        if sequence_length:
-            duplication_starting_point = output_length - offset
-            output += output[duplication_starting_point:sequence_length]
+
+        duplication_starting_point = output_length - offset
+        output += output[duplication_starting_point:duplication_starting_point+sequence_length]
 
         token = stream.read(1)
 
