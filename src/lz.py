@@ -53,20 +53,17 @@ def read_file(path_file):
 
 def decompress(filename):
     with open(filename, "rb") as stream:
-        decompressed_text = read_blocks(stream, bytearray())
+        decompressed_text = read_blocks(stream)
 
-    print(decompressed_text)
-    f = open(filename + '.out', "wb")
-    f.write(decompressed_text)
-    f.close()
+    decompressed_file = open(filename + '.out', "wb")
+    decompressed_file.write(decompressed_text)
+    decompressed_file.close()
 
-def read_blocks(stream, output):
+def read_blocks(stream):
+    output = bytearray()
     # Primer byte del bloc -> token
     token = stream.read(1)
-    i = 0
     while token:
-        if i == 9237 or i == 9238:
-            print('ei')
         # Primera part (4 bits) del token -> mida (bytes) dels literals
         literal_length = (token[0] >> 4)
         if literal_length == 15:  # if 1111, we calculate Linear small-integer code (LSIC)
@@ -94,20 +91,25 @@ def read_blocks(stream, output):
         min_sequence = min(match_length, offset)
         while min_sequence > 0:
             output += output[duplication_starting_point:duplication_starting_point + min_sequence]
-
-            if b'INTERVIEWS THE STRANGER' in output:
-                print('ei')
-
             match_length -= min_sequence
             duplication_starting_point += min_sequence
             min_sequence = min(match_length, offset)
-            i += 1
 
         token = stream.read(1)
-        i += 1
 
     return output
 
+def compress(filename):
+    with open(filename, "rb") as stream:
+        compressed_text = write_blocks(stream)
+
+    f = open(filename + '.lz4', "wb")
+    f.write(compressed_text)
+    f.close()
+
+
+def write_blocks(stream):
+    return None
 
 def calculate_lsic(stream):
     new_value = stream.read(1)[0]
