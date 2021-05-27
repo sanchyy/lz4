@@ -1,6 +1,6 @@
 import argparse
 import struct
-import time 
+import hashlib
 
 """
 LZ4 SEQUENCE
@@ -18,11 +18,8 @@ n = 8192
 m = 128
 """
 
-def hex2bin(hex_value) -> str:
-    return bin(int(hex_value, 16)).zfill(8).split('b')[1]
 
-def bin2hex(bin_value) -> str:
-    return hex(int(bin_value, 2))[2:]
+
 
 def config_args():
     parser = argparse.ArgumentParser(description="lz4 algorithm to compress and deflate files")
@@ -38,18 +35,6 @@ def read_file(path_file):
     f.close()
     return res
 
-    """
-    data = read_file(filename)
-    ptr = 0
-    while ptr < len(data):
-        token = data
-        lit_len = (token >> 4) & 0x0F
-        ptr += 1
-        if lit_len == 15:  # if 1111, we get another byte
-            while data[ptr] == 255:
-                lit_len += 255
-                ptr += 1
-    """
 
 def decompress(filename):
     with open(filename, "rb") as stream:
@@ -68,7 +53,7 @@ def read_blocks(stream, output):
         literal_length = (token[0] >> 4)
         if literal_length == 15:  # if 1111, we calculate Linear small-integer code (LSIC)
             literal_length += calculate_lsic(stream)
-
+        
         # 'literal_length' bytes de literal
         literal = stream.read(literal_length)
 
@@ -83,13 +68,11 @@ def read_blocks(stream, output):
         sequence_length += 4
 
         # number of bytes already decoded
-
         output += literal
         output_length = len(output)
 
         duplication_starting_point = output_length - offset
         output += output[duplication_starting_point:duplication_starting_point+sequence_length]
-
         token = stream.read(1)
 
     return output
