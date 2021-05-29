@@ -100,23 +100,61 @@ def compress_sequence(buff):
     literal_ptr = 0 # pointer of the initial position of the literal
     output = bytearray()
     while read_ptr < buff_len:
-        val = buff[read_ptr:read_ptr+4]
+        val = bytes(buff[read_ptr:read_ptr+4])
         match_ptr = find_match(table, val, read_ptr)
         if match_ptr:
             match_len = get_max_match_len(buff, match_ptr, read_ptr)
 
-            output += write_block(buff, literal_ptr, read_ptr - match_ptr, match_len)
+            output += write_block(buff, buff[literal_ptr:read_ptr], read_ptr - match_ptr, match_len)
             read_ptr += match_len
             literal_ptr = read_ptr
         else:
             table[val] = read_ptr
             read_ptr += 1
 
-    output += write_block(buff, literal_ptr, 0, 0)
+    output += write_block(buff, buff[literal_ptr:read_ptr], 0, 0)
     return output
 
-def write_block(buff, literal_ptr, offset, match_len):
-    return None
+def write_block(buff, literal, offset, match_len):
+    # definitions
+    token = bytearray(1)
+    extended1 = bytearray()
+    extended2 = bytearray()
+    little_endian_offset = bytearray()
+
+    literal_len = len(literal)
+    if literal_len >= 15:
+        # token first 4 bits
+        token[0] = (15 << 4)
+        remain_len = literal_len - 15
+
+        extended1_len = remain_len // 255
+        extended1 = bytearray([255] * extended1_len)
+        extended_last_byte = remain_len % 255
+        if extended_last_byte:
+            extended1 += bytearray([extended_last_byte])
+    else:
+        token[0] = (literal_len << 4)
+
+    if match_len > 0:
+        little_endian_offset = bytearray(value_to_little_endian(offset))
+
+        match_len -= 4
+        if match_len >= 15:
+            # token last 4 bits
+            token[0] = token[0] | 15
+            remain_len = match_len - 15
+
+            extended2_len = remain_len // 255
+            extended2 = bytearray([255] * extended2_len)
+            extended_last_byte = remain_len % 255
+            if extended_last_byte:
+                extended2 += bytearray([extended_last_byte])
+
+        else:
+            token[0] = token[0] | match_len
+
+    return token + extended1 + literal + little_endian_offset + extended2
     
 def find_match(table, value, ptr) -> int:
     pos = table.get(value)
@@ -154,6 +192,8 @@ def little_endian_to_value(little_endian):
     else:
         return 0
 
+def value_to_little_endian(value):
+    return struct.pack("<H", value)
 
 def main():
     # args = config_args()
