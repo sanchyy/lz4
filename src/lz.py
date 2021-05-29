@@ -85,8 +85,15 @@ def read_blocks(stream):
     return output
 
 def compress(filename):
-    return None
+    with open(filename, "rb") as stream:
+        compressed_file = compress_sequence(stream)
+    f = open(f"{filename}.lz4", 'wb')
+    f.write(compressed_file)
+    f.close()
 
+def compress_sequence(stream):
+    return None
+    
 def find_match(table, value, ptr) -> int:
     pos = table.get(value)
     if pos and (ptr - pos) < MAX_OFFSET: 
