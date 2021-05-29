@@ -18,11 +18,9 @@ n = 8192
 m = 128
 """
 
-def hex2bin(hex_value) -> str:
-    return bin(int(hex_value, 16)).zfill(8).split('b')[1]
+MAX_OFFSET = 2**(8*2) - 1
+MIN_MATCH = 4
 
-def bin2hex(bin_value) -> str:
-    return hex(int(bin_value, 2))[2:]
 
 def config_args():
     parser = argparse.ArgumentParser(description="lz4 algorithm to compress and deflate files")
@@ -98,7 +96,7 @@ def read_blocks(stream):
         token = stream.read(1)
 
     return output
-
+"""
 def compress(filename):
     with open(filename, "rb") as stream:
         compressed_text = write_blocks(stream)
@@ -106,9 +104,43 @@ def compress(filename):
     f = open(filename + '.lz4', "wb")
     f.write(compressed_text)
     f.close()
+"""
+def find_match(table, value, ptr) -> int:
+    pos = table.get(value)
+    if pos and (ptr - pos) < MAX_OFFSET: 
+        return pos
+    else:
+        return None 
+
+def get_max_match(buff, it1, it2, max_it) -> int:
+    """
+    it1 -> previous occurence of the word
+    it2 -> actual occurrence
+    """
+    match_len = 0
+    while it1 <= max_it:
+        if buff[it1] == buff[it2]:
+            match_len += 1
+        it1 += 1
+        it2 += 2
+
+def build_dict(stream):
+    char = stream.read(1)
+    dic = {}
+    ptr = 0
+    while char:
+        key = bytes(char)
+        if not key in dic: 
+            dic[key] = ptr
+            ptr += 1 
+        
+        else:
+            while key:= bytes(stream.read(1)) in dic:
+                # passar byte a byte a veure quan falla, i quan falli guardar el byte complert
+                
 
 
-def write_blocks(stream):
+def write_block(buff, literal, offset, match_len):
     return None
 
 def calculate_lsic(stream):
