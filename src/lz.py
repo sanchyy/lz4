@@ -36,19 +36,6 @@ def read_file(path_file):
     f.close()
     return res
 
-    """
-    data = read_file(filename)
-    ptr = 0
-    while ptr < len(data):
-        token = data
-        lit_len = (token >> 4) & 0x0F
-        ptr += 1
-        if lit_len == 15:  # if 1111, we get another byte
-            while data[ptr] == 255:
-                lit_len += 255
-                ptr += 1
-    """
-
 def decompress(filename):
     with open(filename, "rb") as stream:
         decompressed_text = read_blocks(stream)
@@ -96,15 +83,10 @@ def read_blocks(stream):
         token = stream.read(1)
 
     return output
-"""
-def compress(filename):
-    with open(filename, "rb") as stream:
-        compressed_text = write_blocks(stream)
 
-    f = open(filename + '.lz4', "wb")
-    f.write(compressed_text)
-    f.close()
-"""
+def compress(filename):
+    return None
+
 def find_match(table, value, ptr) -> int:
     pos = table.get(value)
     if pos and (ptr - pos) < MAX_OFFSET: 
@@ -112,33 +94,18 @@ def find_match(table, value, ptr) -> int:
     else:
         return None 
 
-def get_max_match(buff, it1, it2, max_it) -> int:
+def get_max_match(buff, it1, it2) -> int:
     """
     it1 -> previous occurence of the word
     it2 -> actual occurrence
+    returns max match length
     """
     match_len = 0
-    while it1 <= max_it:
-        if buff[it1] == buff[it2]:
-            match_len += 1
+    while buff[it1] == buff[it2]:
+        match_len += 1
         it1 += 1
         it2 += 2
-
-def build_dict(stream):
-    char = stream.read(1)
-    dic = {}
-    ptr = 0
-    while char:
-        key = bytes(char)
-        if not key in dic: 
-            dic[key] = ptr
-            ptr += 1 
-        
-        else:
-            while key:= bytes(stream.read(1)) in dic:
-                # passar byte a byte a veure quan falla, i quan falli guardar el byte complert
-                
-
+    return match_len
 
 def write_block(buff, literal, offset, match_len):
     return None
