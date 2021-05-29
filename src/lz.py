@@ -85,13 +85,37 @@ def read_blocks(stream):
     return output
 
 def compress(filename):
-    with open(filename, "rb") as stream:
-        compressed_file = compress_sequence(stream)
+    with open(filename, "rb") as f:
+        buff = bytearray(f.read())
+        compressed_file = compress_sequence(buff)
     f = open(f"{filename}.lz4", 'wb')
     f.write(compressed_file)
     f.close()
 
-def compress_sequence(stream):
+def compress_sequence(buff):
+    buff_len = len(buff)
+    table = {}
+    read_ptr = 0
+    write_ptr = 0
+    literal_ptr = 0 # pointer of the initial position of the literal
+    output = bytearray()
+    while read_ptr < buff_len:
+        val = buff[read_ptr:read_ptr+4]
+        match_ptr = find_match(table, val, read_ptr)
+        if match_ptr:
+            match_len = get_max_match_len(buff, match_ptr, read_ptr)
+
+            output += write_block(buff, literal_ptr, read_ptr - match_ptr, match_len)
+            read_ptr += match_len
+            literal_ptr = read_ptr
+        else:
+            table[val] = read_ptr
+            read_ptr += 1
+
+    output += write_block(buff, literal_ptr, 0, 0)
+    return output
+
+def write_block(buff, literal_ptr, offset, match_len):
     return None
     
 def find_match(table, value, ptr) -> int:
@@ -101,7 +125,7 @@ def find_match(table, value, ptr) -> int:
     else:
         return None 
 
-def get_max_match(buff, it1, it2) -> int:
+def get_max_match_len(buff, it1, it2) -> int:
     """
     it1 -> previous occurence of the word
     it2 -> actual occurrence
@@ -113,9 +137,6 @@ def get_max_match(buff, it1, it2) -> int:
         it1 += 1
         it2 += 1
     return match_len
-
-def write_block(buff, literal, offset, match_len):
-    return None
 
 def calculate_lsic(stream):
     new_value = stream.read(1)[0]
