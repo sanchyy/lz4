@@ -111,7 +111,7 @@ def get_max_match(buff, it1, it2) -> int:
     while buff[it1] == buff[it2]:
         match_len += 1
         it1 += 1
-        it2 += 2
+        it2 += 1
     return match_len
 
 def write_block(buff, literal, offset, match_len):
