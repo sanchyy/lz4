@@ -26,8 +26,8 @@ LIMIT_BYTES = 13  # Els ultims 13 bytes no els comprimim
 def config_args():
     parser = argparse.ArgumentParser(description="lz4 algorithm to compress and deflate files")
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--c', '--compress', action='store_true')
-    group.add_argument('--d', '--decompress', action='store_false')
+    group.add_argument('-c', '-compress', action='store_true')
+    group.add_argument('-d', '-decompress', action='store_false')
     parser.add_argument('file')
     return parser.parse_args()
 
@@ -41,11 +41,12 @@ def decompress(filename):
     with open(filename, "rb") as stream:
         decompressed_text = read_blocks(stream)
 
-    decompressed_file = open(filename + '.out', "wb")
+    decompressed_file = open(f"{filename}.out", "wb")
     decompressed_file.write(decompressed_text)
     decompressed_file.close()
 
 def read_blocks(stream):
+    print("hola")
     output = bytearray()
     # Primer byte del bloc -> token
     token = stream.read(1)
@@ -198,16 +199,13 @@ def value_to_little_endian(value):
     return struct.pack("<H", value)
 
 def main():
-    # args = config_args()
-    # if args.c:
-    #     print(hex2bin(args.file))
-    #     # compress(args.file)
-    # elif args.d:
-    #     print(bin2hex(args.file))
-    #     # decompress(args.file)
-    decompress('../wells_the_invisible_man.txt.lz4')
-
-
+    args = config_args()
+    print(args)
+    if args.c:
+        compress(args.file)
+    else:
+        decompress(args.file)
+        
 
 if __name__ == '__main__':
     main()
