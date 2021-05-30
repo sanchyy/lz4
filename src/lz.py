@@ -131,11 +131,8 @@ def write_block(buff, literal, offset, match_len):
         token[0] = (15 << 4)
         remain_len = literal_len - 15
 
-        extended1_len = remain_len // 255
-        extended1 = bytearray([255] * extended1_len)
-        extended_last_byte = remain_len % 255
-        if extended_last_byte:
-            extended1 += bytearray([extended_last_byte])
+        extended1 = bytearray([255] * (remain_len // 255))
+        extended1 += bytearray([remain_len % 255])
     else:
         token[0] = (literal_len << 4)
 
@@ -148,11 +145,8 @@ def write_block(buff, literal, offset, match_len):
             token[0] = token[0] | 15
             remain_len = match_len - 15
 
-            extended2_len = remain_len // 255
-            extended2 = bytearray([255] * extended2_len)
-            extended_last_byte = remain_len % 255
-            if extended_last_byte:
-                extended2 += bytearray([extended_last_byte])
+            extended2 = bytearray([255] * (remain_len // 255))
+            extended2 += bytearray([remain_len % 255])
 
         else:
             token[0] = token[0] | match_len
@@ -161,7 +155,7 @@ def write_block(buff, literal, offset, match_len):
     
 def find_match(table, value, ptr) -> int:
     pos = table.get(value)
-    if pos and (ptr - pos) < MAX_OFFSET: 
+    if pos and (ptr - pos) <= MAX_OFFSET: 
         return pos
     else:
         return None 
