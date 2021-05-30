@@ -42,6 +42,7 @@ def decompress(filename):
         decompressed_text = read_blocks(stream)
 
     decompressed_file = open(f"{filename}.out", "wb")
+    # decompressed_file = open(filename.replace('.lz4', ''), "wb")
     decompressed_file.write(decompressed_text)
     decompressed_file.close()
 
@@ -106,7 +107,7 @@ def compress_sequence(buff):
         val = bytes(buff[read_ptr:read_ptr+4])
         match_ptr = find_match(table, val, read_ptr)
         if match_ptr:
-            match_len = get_max_match_len(buff, match_ptr, read_ptr)
+            match_len = get_max_match_len(buff, match_ptr, read_ptr, max_index)
 
             output += write_block(buff, buff[literal_ptr:read_ptr], read_ptr - match_ptr, match_len)
             read_ptr += match_len
@@ -160,14 +161,14 @@ def find_match(table, value, ptr) -> int:
     else:
         return None 
 
-def get_max_match_len(buff, it1, it2) -> int:
+def get_max_match_len(buff, it1, it2, max_it) -> int:
     """
     it1 -> previous occurence of the word
     it2 -> actual occurrence
     returns max match length
     """
     match_len = 0
-    while buff[it1] == buff[it2]:
+    while it2 <= max_it and buff[it1] == buff[it2]:
         match_len += 1
         it1 += 1
         it2 += 1
