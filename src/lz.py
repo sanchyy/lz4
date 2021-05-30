@@ -41,8 +41,8 @@ def decompress(filename):
     with open(filename, "rb") as stream:
         decompressed_text = read_blocks(stream)
 
-    decompressed_file = open(f"{filename}.out", "wb")
-    # decompressed_file = open(filename.replace('.lz4', ''), "wb")
+    # decompressed_file = open(f"{filename}.out", "wb")
+    decompressed_file = open(filename.replace('.lz4', ''), "wb")
     decompressed_file.write(decompressed_text)
     decompressed_file.close()
 
