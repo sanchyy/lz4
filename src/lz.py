@@ -20,6 +20,7 @@ m = 128
 
 MAX_OFFSET = 2**(8*2) - 1
 MIN_MATCH = 4
+LIMIT_BYTES = 13  # Els ultims 13 bytes no els comprimim
 
 
 def config_args():
@@ -99,7 +100,8 @@ def compress_sequence(buff):
     write_ptr = 0
     literal_ptr = 0 # pointer of the initial position of the literal
     output = bytearray()
-    while read_ptr < buff_len:
+    max_index = buff_len - LIMIT_BYTES
+    while read_ptr < max_index:
         val = bytes(buff[read_ptr:read_ptr+4])
         match_ptr = find_match(table, val, read_ptr)
         if match_ptr:
@@ -112,7 +114,7 @@ def compress_sequence(buff):
             table[val] = read_ptr
             read_ptr += 1
 
-    output += write_block(buff, buff[literal_ptr:read_ptr], 0, 0)
+    output += write_block(buff, buff[literal_ptr:buff_len], 0, 0)
     return output
 
 def write_block(buff, literal, offset, match_len):
@@ -137,7 +139,7 @@ def write_block(buff, literal, offset, match_len):
         token[0] = (literal_len << 4)
 
     if match_len > 0:
-        little_endian_offset = bytearray(value_to_little_endian(offset))
+        little_endian_offset = bytes(value_to_little_endian(offset))
 
         match_len -= 4
         if match_len >= 15:
