@@ -47,7 +47,6 @@ def decompress(filename):
     decompressed_file.close()
 
 def read_blocks(stream):
-    print("hola")
     output = bytearray()
     # Primer byte del bloc -> token
     token = stream.read(1)
@@ -108,6 +107,8 @@ def compress_sequence(buff):
         match_ptr = find_match(table, val, read_ptr)
         if match_ptr:
             match_len = get_max_match_len(buff, match_ptr, read_ptr, max_index)
+            if match_len < 4:
+                break
 
             output += write_block(buff, buff[literal_ptr:read_ptr], read_ptr - match_ptr, match_len)
             read_ptr += match_len
@@ -200,7 +201,7 @@ def main():
         compress(args.file)
     else:
         decompress(args.file)
-        
+
 
 if __name__ == '__main__':
     main()
